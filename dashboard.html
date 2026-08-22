@@ -1,0 +1,209 @@
+dashboard.html: 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JJCET eNotice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+      color: #2c3e50;
+      padding: 30px;
+      animation: fadeIn 1s ease-in;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.8rem;
+      font-weight: 600;
+      color: #1a237e;
+      margin-bottom: 30px;
+    }
+
+    .main-card {
+      max-width: 1000px;
+      margin: auto;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      animation: slideUp 1s ease-in-out;
+    }
+
+    .section {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .block {
+      flex: 1 1 30%;
+      background: linear-gradient(135deg, #ece9e6, #ffffff);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .block:hover {
+      transform: scale(1.03);
+    }
+
+    .label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #3949ab;
+    }
+
+    .value {
+      font-size: 1.4rem;
+      color: #2d3436;
+      margin-top: 8px;
+    }
+
+    img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      border-radius: 15px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.85rem;
+      color: #7b8c9d;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      .section {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>JJCET eNotice</h1>
+
+  <div class="main-card">
+    <div class="section">
+      <div class="block">
+        <div class="label">Time</div>
+        <div class="value" id="time">--</div>
+      </div>
+      <div class="block">
+        <div class="label">Date</div>
+        <div class="value" id="date">--</div>
+      </div>
+      <div class="block">
+        <div class="label">Day</div>
+        <div class="value" id="day">--</div>
+      </div>
+    </div>
+
+    <!-- 🟥 Environment Data -->
+    <div class="section">
+      <div class="block">
+        <div class="label">Temperature</div>
+        <div class="value" id="temp">-- °C</div>
+      </div>
+      <div class="block">
+        <div class="label">Humidity</div>
+        <div class="value" id="humidity">-- %</div>
+      </div>
+      <div class="block">
+        <div class="label">AQI</div>
+        <div class="value" id="aqi">--</div>
+      </div>
+      <div class="block">
+        <div class="label">Location</div>
+        <div class="value" id="location">--</div>
+      </div>
+    </div>
+    <!-- 🟨 General Announcement at Top -->
+    <div class="section">
+      <div class="block" style="flex: 1 1 100%;">
+        <div class="label">General Announcement</div>
+        <div class="value" id="announcement">--</div>
+      </div>
+    </div>
+
+    <!-- 🟦 Time/Date/Day Info -->
+    
+    <!-- 🟩 Dynamic Image from Firebase -->
+    <img id="mainImage" src="https://jjcet.ac.in/wp-content/uploads/2024/03/SBP_2435.webp" alt="Notice Image" />
+  </div>
+
+  <footer>
+    &copy; 2025 eNotify | Developed by Prakatheshwaran AR, Heera J, Hema P | Mentored by Anil Dasaroju <sub>Corporate Trianer</sub>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfXPxXVWG9bMV2TXajCpESqIdBwPeWTkA",
+      authDomain: "enotifyboard.firebaseapp.com",
+      databaseURL: "https://enotifyboard-default-rtdb.firebaseio.com",
+      projectId: "enotifyboard",
+      storageBucket: "enotifyboard.appspot.com",
+      messagingSenderId: "968798974119",
+      appId: "1:968798974119:web:ab60bd59a39ab83fb26b82",
+      measurementId: "G-0Y0HMNJ5KK"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    function updateUI(path, elementId, isImage = false) {
+      const dataRef = ref(db, path);
+      onValue(dataRef, (snapshot) => {
+        const val = snapshot.val();
+        if (val !== null) {
+          if (isImage) {
+            document.getElementById(elementId).src = val;
+          } else {
+            document.getElementById(elementId).textContent = val;
+          }
+        }
+      });
+    }
+
+    // Live Data Fetch from Firebase
+    updateUI("env/announcement", "announcement");
+    updateUI("env/image", "mainImage", true);
+    updateUI("env/time", "time");
+    updateUI("env/date", "date");
+    updateUI("env/day", "day");
+    updateUI("env/temp", "temp");
+    updateUI("env/humidity", "humidity");
+    updateUI("env/aqi", "aqi");
+    updateUI("env/location", "location");
+  </script>
+</body>
+</html>
